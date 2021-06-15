@@ -2,6 +2,8 @@ import string
 import sys
 import numpy as np
 
+#data profiling before training the model for SPAM- HAM Classification
+
 from hashlib import md5
 
 if sys.version_info < (3,):
