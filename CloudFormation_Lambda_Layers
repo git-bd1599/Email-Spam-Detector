@@ -1,0 +1,181 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Metadata": {
+        "AWS::CloudFormation::Designer": {
+            "975cfae3-5a4f-44da-b94a-d1cbb6d7477a": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 1110,
+                    "y": -320
+                },
+                "z": 0,
+                "embeds": []
+            },
+            "1708f1ba-c989-4bcc-855f-517636ba6587": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 1110,
+                    "y": -120
+                },
+                "z": 0,
+                "embeds": [],
+                "isassociatedwith": [
+                    "975cfae3-5a4f-44da-b94a-d1cbb6d7477a"
+                ]
+            },
+            "fa4b7424-eb78-4452-80fe-eb6e854bdc45": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 880,
+                    "y": -320
+                },
+                "z": 0,
+                "embeds": []
+            },
+            "3ff2844c-e9c6-4862-8695-e37ee0491537": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 729.0803577420255,
+                    "y": -175.29905971690644
+                },
+                "z": 0,
+                "embeds": []
+            },
+            "bbc92ca3-9ee8-47f6-8cae-7440a3931e6a": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 694.6701903150908,
+                    "y": -309.5920891997224
+                },
+                "z": 0,
+                "embeds": []
+            }
+        }
+    },
+    "Resources": {
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "mail-spam-bucket"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "975cfae3-5a4f-44da-b94a-d1cbb6d7477a"
+                }
+            }
+        },
+        "BucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+                "Bucket": {
+                    "Ref": "S3Bucket"
+                },
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Principal": "*",
+                            "Effect": "Allow",
+                            "Action": [
+                                "s3:PutObject",
+                                "s3:GetObject"
+                            ],
+                            "Resource": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        "arn:aws:s3:::",
+                                        {
+                                            "Ref": "S3Bucket"
+                                        },
+                                        "/*"
+                                    ]
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "1708f1ba-c989-4bcc-855f-517636ba6587"
+                }
+            }
+        },
+        "SESRuleSet": {
+            "Type": "AWS::SES::ReceiptRuleSet",
+            "Properties": {
+                "RuleSetName": "cf-ses-rule-set"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "fa4b7424-eb78-4452-80fe-eb6e854bdc45"
+                }
+            }
+        },
+        "SESReceiptRule": {
+            "Type": "AWS::SES::ReceiptRule",
+            "Properties": {
+                "Rule": {
+                    "Actions": [
+                        {
+                            "S3Action": {
+                                "BucketName": {
+                                    "Ref": "S3Bucket"
+                                }
+                            }
+                        }
+                    ],
+                    "Enabled": true
+                },
+                "RuleSetName": {
+                    "Ref": "SESRuleSet"
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "3ff2844c-e9c6-4862-8695-e37ee0491537"
+                }
+            }
+        },
+        "Lambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "S3Bucket": "pythoncode-zip",
+                    "S3Key": "SpamEmail.zip"
+                },
+                "Description": "CF Lambda - Spam/Ham Email classification",
+                "FunctionName": "cf-Spam-Email",
+                "Handler": "lambda_function.lambda_handler",
+                "Layers": [
+                    {
+                        "Arn": "arn:aws:lambda:us-west-2:420165488524:layer:AWSLambda-Python38-SciPy1x:29",
+                        "CodeSize": 300
+                    }
+                ],
+                "Role": "arn:aws:iam::117834391284:role/service-role/SpamEmail-role-gsrmee04",
+                "Runtime": "python3.8"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "bbc92ca3-9ee8-47f6-8cae-7440a3931e6a"
+                }
+            }
+        }
+    }
+}
